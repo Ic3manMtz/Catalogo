@@ -1,0 +1,24 @@
+public class Main {
+    public static void main(String[] args) {
+        Automovil[] cars = new Automovil[3];
+        cars[0] = new Sedan("Toyota Camry", "camry.jpg");
+        cars[1] = new SUV("Honda CR-V", "crv.jpg");
+        cars[2] = new Sedan("Nissan Altima", "altima.jpg");
+
+        for (Automovil car : cars) {
+            System.out.println(car.getName() + " - " + car.getType() + " - " + car.getImage());
+        }
+    }
+    
+class Sedan extends Automovil {
+    public Sedan(String name, String image) {
+        super(name, "Sedan", image);
+    }
+}
+
+class SUV extends Automovil {
+    public SUV(String name, String image) {
+        super(name, "SUV", image);
+    }
+
+}
