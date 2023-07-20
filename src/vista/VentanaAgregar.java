@@ -2,6 +2,7 @@ package vista;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,7 +13,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -23,20 +26,22 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+
+import controlador.Coordinador;
 
 public class VentanaAgregar extends JFrame implements ActionListener{
 
+	private Coordinador coordinador;
+	
 	private JPanel contentPane;
 	private JButton btnChooseImage;
 	private JTextField textNombre;
 	private JButton btnAgregar;
 	private JComboBox comboTypes;
 	private File selectedFile;
-	private JLabel lblerror;
 	private JTextField textMarca;
+	
 
 
 	public VentanaAgregar() {
@@ -49,7 +54,10 @@ public class VentanaAgregar extends JFrame implements ActionListener{
 
 		iniciarComponentes();
 	}
-
+	
+	public void setCoordinador(Coordinador coordinador) {
+		this.coordinador=coordinador;
+	}
 
 	private void iniciarComponentes() {
 		contentPane = new JPanel();
@@ -102,7 +110,7 @@ public class VentanaAgregar extends JFrame implements ActionListener{
 		textMarca.setBounds(201, 14, 121, 27);
 		getContentPane().add(textMarca);
 	}
-
+ 
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -124,11 +132,18 @@ public class VentanaAgregar extends JFrame implements ActionListener{
 			}else {
 				JOptionPane.showMessageDialog(null, "Vehiculo agregado correctamente!", "Vehículo agregado",JOptionPane.INFORMATION_MESSAGE);
 				SaveImage(selectedFile);
+				String marca = textMarca.getText();
+				String nombre = textNombre.getText();
+				String tipo = (String)comboTypes.getSelectedItem();
+				coordinador.agregarVehiculo(marca, nombre, tipo, selectedFile);
+				textMarca.setText("");
+				textNombre.setText("");
+				comboTypes.setSelectedIndex(0);
+				selectedFile=null;
 			}
-		}
-		
-	}
 
+		}
+	}
 
 	private boolean validateForm() {
 		String nombre = textNombre.getText().trim();

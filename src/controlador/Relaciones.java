@@ -14,10 +14,16 @@ public class Relaciones {
 		
 		//Se establecen las relaciones entre las clases
 		ventanaPrincipal.setCoordinador(coordinador);
+		ventanaAgregar.setCoordinador(coordinador);
+		ventanaDetalles.setCoordinador(coordinador);
+		catalogo.setCoordinador(coordinador);
 		
 		//Se establecen relaciones con la clase coordinador
 		coordinador.setVentanaPrincipal(ventanaPrincipal);
-
-		coordinador.mostrarVentanaPrincipal();
+		coordinador.setVentanaAgregar(ventanaAgregar);
+		coordinador.setVentanaDetalles(ventanaDetalles);
+		coordinador.setCatalogo(catalogo);
+		
+		coordinador.iniciarSistema();
 	}
 }

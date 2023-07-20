@@ -6,12 +6,15 @@ public abstract class Automovil {
     private String marca;
     private String nombre;
     private String tipo;
+    private ImageIcon imageIcon;
     
-	public Automovil(String marca, String nombre, String tipo) {
+    
+	public Automovil(String marca, String nombre, String tipo, ImageIcon imageIcon) {
 		super();
 		this.marca = marca;
 		this.nombre = nombre;
 		this.tipo = tipo;
+		this.imageIcon=imageIcon;
 	}
 	
 	public String getMarca() {
@@ -25,9 +28,12 @@ public abstract class Automovil {
 	public String getTipo() {
 		return this.tipo;
 	}
+	
+	public ImageIcon getImage() {
+		return this.imageIcon;
+	}
 
 	public abstract void mostrarInformacion();
-    public abstract ImageIcon crearImagen();
 }
 
 

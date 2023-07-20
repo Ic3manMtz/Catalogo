@@ -1,7 +1,6 @@
 package vista;
 
 import java.awt.BasicStroke;
-import java.awt.Choice;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -10,6 +9,7 @@ import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.SystemColor;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,53 +18,60 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.RoundRectangle2D;
+import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import controlador.Coordinador;
 import modelo.Automovil;
-import javax.swing.JComboBox;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.UIManager;
-import javax.swing.JButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
 
-public class VentanaPrincipal extends JFrame implements ActionListener, MouseListener, KeyListener{
+public class VentanaPrincipal extends JFrame implements ActionListener, MouseListener, KeyListener, DocumentListener{
+	
+	private Coordinador coordinador;
 
 	private JPanel contentPane;
-	private DefaultListModel modelo;
-
-	private Coordinador coordinador;
+	
+	private JPanel topBar;
+	private JLabel lblCatalogo;
+	private JButton btnNuevoVehiculo;
+	
+	private JPanel searchBar;
 	private JTextField txtBuscarPorNombre;
 	private JPanel textoABuscar;
 	private JComboBox filtrarPor;
 	private JComboBox ordenarPor;
-	private JPanel topBar;
-	private JButton btnAplicarFiltroYOrden;
-	private JLabel lblCatalogo;
-	private JButton btnNuevoVehiculo;
-	private JTable table;
+	
+	
 	private JScrollPane scrollPane;
+	private DefaultListModel<JLabel> modelo;
+	private JList<JLabel> list;
 
 	public VentanaPrincipal() {
 		setIconImage(Toolkit.getDefaultToolkit().getImage(VentanaPrincipal.class.getResource("/img/outline_directions_car_black_24dp.png")));
 		setResizable(false);
 		setTitle("Taller Automotriz");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setSize(793, 416);
+		setSize(793, 539);
 		setLocationRelativeTo(null);
 		iniciarComponentes();
 
@@ -78,7 +85,7 @@ public class VentanaPrincipal extends JFrame implements ActionListener, MouseLis
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
-		JPanel searchBar = new JPanel();
+		searchBar = new JPanel();
 		searchBar.setBounds(0, 70, 777, 54);
 		searchBar.setBackground(Color.WHITE);
 		contentPane.add(searchBar);
@@ -97,68 +104,37 @@ public class VentanaPrincipal extends JFrame implements ActionListener, MouseLis
 		txtBuscarPorNombre.setBounds(46, 5, 295, 32);
 		textoABuscar.add(txtBuscarPorNombre);
 		txtBuscarPorNombre.setBorder(null);
-		txtBuscarPorNombre.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		txtBuscarPorNombre.setFont(new Font("Cascadia Code", Font.PLAIN, 14));
 		txtBuscarPorNombre.setForeground(Color.LIGHT_GRAY);
 		txtBuscarPorNombre.setBackground(new Color(240, 240, 240));
 		txtBuscarPorNombre.setText("Buscar por nombre del vehículo");
 		txtBuscarPorNombre.setFocusable(false);
 		txtBuscarPorNombre.addMouseListener(this);
 		txtBuscarPorNombre.addKeyListener(this);
-		txtBuscarPorNombre.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                updateTextColor();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                updateTextColor();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                updateTextColor();
-            }
-
-            private void updateTextColor() {
-                if (txtBuscarPorNombre.getText().equals("Buscar por nombre del vehículo")) {
-                	txtBuscarPorNombre.setForeground(Color.LIGHT_GRAY);
-                } else {
-                	txtBuscarPorNombre.setForeground(Color.BLACK);
-                }
-            }
-        });
+		txtBuscarPorNombre.getDocument().addDocumentListener(this);
 		txtBuscarPorNombre.setColumns(10);
 		
 		filtrarPor = new JComboBox();
-		filtrarPor.setBounds(517, 15, 76, 25);
+		filtrarPor.setBounds(680, 14, 76, 25);
 		filtrarPor.setFont(new Font("Tahoma", Font.PLAIN, 12));
-		filtrarPor.setModel(new DefaultComboBoxModel(new String[] {"Filtrar por","Tipo", "Marca"}));
+		filtrarPor.setModel(new DefaultComboBoxModel(new String[] {"Filtrar por", "Sedan", "Crossover", "Hatchback", "Suv"}));
 		filtrarPor.setBorder(null);
 		filtrarPor.setBackground(new Color(240, 240, 240));
 		filtrarPor.setFocusable(false);
+		filtrarPor.addActionListener(this);
 		
 		ordenarPor = new JComboBox();
-		ordenarPor.setBounds(598, 15, 91, 25);
+		ordenarPor.setBounds(579, 14, 91, 25);
 		ordenarPor.setModel(new DefaultComboBoxModel(new String[] {"Ordenar por", "Nombre", "Tipo", "Marca"}));
 		ordenarPor.setFont(new Font("Tahoma", Font.PLAIN, 12));
 		ordenarPor.setFocusable(false);
 		ordenarPor.setBorder(null);
 		ordenarPor.setBackground(UIManager.getColor("Button.background"));
-		
-		btnAplicarFiltroYOrden = new JButton("Aplicar");
-		btnAplicarFiltroYOrden.setBounds(694, 12, 65, 30);
-		btnAplicarFiltroYOrden.addActionListener(this);
-		btnAplicarFiltroYOrden.setFont(new Font("Cascadia Code", Font.PLAIN, 11));
-		btnAplicarFiltroYOrden.setForeground(Color.WHITE);
-		btnAplicarFiltroYOrden.setBorder(null);
-		btnAplicarFiltroYOrden.setFocusable(false);
-		btnAplicarFiltroYOrden.setBackground(new Color(33, 107, 254));
+		ordenarPor.addActionListener(this);
 		searchBar.setLayout(null);
 		searchBar.add(textoABuscar);
 		searchBar.add(filtrarPor);
 		searchBar.add(ordenarPor);
-		searchBar.add(btnAplicarFiltroYOrden);
 		
 		topBar = new JPanel();
 		topBar.setBackground(Color.WHITE);
@@ -183,26 +159,53 @@ public class VentanaPrincipal extends JFrame implements ActionListener, MouseLis
 		
 		scrollPane = new JScrollPane();
 		scrollPane.setBackground(Color.WHITE);
-		scrollPane.setBorder(null);
-		scrollPane.setBounds(21, 141, 736, 236);
+		scrollPane.setBorder(new LineBorder(new Color(0, 0, 0)));
+		scrollPane.setBounds(21, 141, 736, 359);
 		contentPane.add(scrollPane);
 		
-		table = new JTable();
-		table.setBackground(Color.WHITE);
-		table.setBorder(null);
-		scrollPane.setViewportView(table);
-		
+		list = new JList();
+		list.setSelectionForeground(SystemColor.textHighlight);
+		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		list.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+		list.addMouseListener(this);
+		list.setVisibleRowCount(-1);
+		list.setBorder(null);
+		list.setBackground(Color.WHITE);
+		list.setFixedCellHeight(-1);
+		list.setFixedCellWidth(-1);
+				
 		modelo = new DefaultListModel<>();
 		
+		list.setModel(modelo);
+		list.setCellRenderer(new JLabelRenderer());
+		scrollPane.setViewportView(list);		
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(e.getSource()==btnNuevoVehiculo) {
-			VentanaAgregar ventanaAgregar = new VentanaAgregar();
-			ventanaAgregar.setVisible(true);
+			coordinador.abrirVentanaAgregar();
 		}
-
+		
+		if(e.getSource()==ordenarPor) {
+			String response = (String) ordenarPor.getSelectedItem();
+			
+			if(response.equalsIgnoreCase("Ordenar por")) {
+				coordinador.restoreData();
+			}else {
+				coordinador.orderList(response);
+			}
+		}
+		
+		if(e.getSource()==filtrarPor) {
+			String response = (String) filtrarPor.getSelectedItem();
+			
+			if(response.equalsIgnoreCase("filtrar por") || response.equalsIgnoreCase("todos")) {
+				coordinador.restoreData();
+			}else {
+				coordinador.filterList(response);
+			}
+		}
 	}
 
 	@Override
@@ -210,63 +213,73 @@ public class VentanaPrincipal extends JFrame implements ActionListener, MouseLis
 		if(e.getSource()==txtBuscarPorNombre) {
 			txtBuscarPorNombre.setFocusable(true);
 			txtBuscarPorNombre.requestFocus();
-			txtBuscarPorNombre.setText(" ");
+			txtBuscarPorNombre.setText("");
 		}
-	}
-
-	@Override
-	public void mousePressed(MouseEvent e) {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent e) {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-	}
-
-	public void setCoordinador(Coordinador coordinador) {
-		this.coordinador=coordinador;		
-	}
-
-	public void llenarLista(List<Automovil> encontrados) {
-		modelo.removeAllElements();
-	
-		for(Automovil automovil:encontrados) {
-			String fila="";// = "Nombre: " + automovil.getName() + ", Tipo: " + automovil.getType();
-			modelo.addElement(fila);
-		}
-	}
-
-	@Override
-	public void keyTyped(KeyEvent e) {
-		// TODO Auto-generated method stub
 		
+		if(e.getClickCount() == 2) {
+			String selectedValue = list.getSelectedValue().getText();
+			coordinador.abrirVentanaDetalles(selectedValue);
+		}
+	}
+	
+	@Override
+	public void insertUpdate(DocumentEvent e) {
+		updateTextColor();
 	}
 
+	@Override
+	public void removeUpdate(DocumentEvent e) {
+		updateTextColor();
+	}
+
+	@Override
+	public void changedUpdate(DocumentEvent e) {
+		updateTextColor();		
+	}
+	
+    private void updateTextColor() {
+    	if (txtBuscarPorNombre.getText().equals("Buscar por nombre del vehículo")) {
+    		txtBuscarPorNombre.setForeground(Color.LIGHT_GRAY);
+    	} else {
+         	txtBuscarPorNombre.setForeground(Color.BLACK);
+        }
+    }
+	
 	@Override
 	public void keyPressed(KeyEvent e) {
 		if(e.getKeyCode()==KeyEvent.VK_ENTER) {
-			System.out.println("Enter presionado");
+			String nombre = txtBuscarPorNombre.getText();
+			txtBuscarPorNombre.setText("Buscar por nombre del vehículo");
+			txtBuscarPorNombre.setFocusable(false);
+			
+			if(nombre.isEmpty()) {
+				coordinador.restoreData();
+				
+			}else {
+				coordinador.searchByName(nombre);
+			}			
 		}
 	}
-
-	@Override
-	public void keyReleased(KeyEvent e) {
-		// TODO Auto-generated method stub
-		
+ 
+	private static class JLabelRenderer extends JLabel implements ListCellRenderer<JLabel> {
+		@Override
+		public Component getListCellRendererComponent(JList<? extends JLabel> list, JLabel value, int index, boolean isSelected, boolean cellHasFocus) {
+            JLabel label = (JLabel) value;
+            label.setIcon(label.getIcon());
+            label.setHorizontalAlignment(JLabel.CENTER);
+            label.setVerticalAlignment(JLabel.CENTER);
+            if (isSelected) {
+                label.setBackground(list.getSelectionBackground());
+                label.setForeground(list.getSelectionForeground());
+            } else {
+                label.setBackground(list.getBackground());
+                label.setForeground(list.getForeground());
+            }
+            return label;
+		}
 	}
 	
-	static class RoundBorder implements Border{
+	private static class RoundBorder implements Border{
 		private int radius;
 		
 		public RoundBorder(int radius) {
@@ -293,6 +306,55 @@ public class VentanaPrincipal extends JFrame implements ActionListener, MouseLis
 		public boolean isBorderOpaque() {
 			return true;
 		}
-		
 	}
+	
+	public void setCoordinador(Coordinador coordinador) {
+		this.coordinador=coordinador;		
+	}
+
+	public void llenarLista() {
+		modelo.removeAllElements();
+		
+		List<Automovil> listaVehiculos = coordinador.getCatalogo();
+		
+		for(Automovil automovil:listaVehiculos) {
+			JLabel newLabel = new JLabel(automovil.getImage());
+			newLabel.setText(automovil.getMarca()+" "+automovil.getNombre());
+			newLabel.setFont(new Font("Cascadia Code", Font.PLAIN, 16));
+			newLabel.setHorizontalTextPosition(JLabel.CENTER);
+			newLabel.setVerticalTextPosition(JLabel.BOTTOM);
+			modelo.addElement(newLabel);
+		}
+	}
+	
+	public void actualizarLista(List<Automovil> listaVehiculos) {
+		modelo.removeAllElements();
+				
+		for(Automovil automovil:listaVehiculos) {
+			JLabel newLabel = new JLabel(automovil.getImage());
+			newLabel.setText(automovil.getMarca()+" "+automovil.getNombre());
+			newLabel.setFont(new Font("Cascadia Code", Font.PLAIN, 16));
+			newLabel.setHorizontalTextPosition(JLabel.CENTER);
+			newLabel.setVerticalTextPosition(JLabel.BOTTOM);
+			modelo.addElement(newLabel);
+		}
+	}
+	
+	@Override
+	public void mousePressed(MouseEvent e) {}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {}
+
+	@Override
+	public void mouseExited(MouseEvent e) {}
+	
+	@Override
+	public void keyTyped(KeyEvent e) {}
+	
+	@Override
+	public void keyReleased(KeyEvent e) {}
 }

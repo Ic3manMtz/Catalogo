@@ -1,16 +1,23 @@
 package modelo;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import controlador.Coordinador;
 
 public class Catalogo {
+	
+	private Coordinador coordinador;
 	private List<Automovil> listaAutomoviles;
-	private List<Sedan> sedanes;
 	
 	public Catalogo() {
 		this.listaAutomoviles=new ArrayList<>();
+	}
+	
+	public void setCoordinador(Coordinador coordinador) {
+		this.coordinador=coordinador;		
 	}
 	
 	public void agregarVehiculo(Sedan sedan) {
@@ -33,7 +40,7 @@ public class Catalogo {
 		return this.listaAutomoviles;
 	}
 	
-	public List<Automovil> buscarAutmovilPorNombre(String nombre){
+	public List<Automovil> buscarVehiculoPorNombre(String nombre){
 		List<Automovil> encontrados = new ArrayList<>();
 		
 		for(Automovil automovil:listaAutomoviles) {
@@ -41,18 +48,67 @@ public class Catalogo {
 				encontrados.add(automovil);
 			}
 		}
+		
 		return encontrados;
 	}
 	
-	public List<Automovil> buscarAutomovilPorTipo(String tipo){
-		List<Automovil> encontrados = new ArrayList<>();
-		
+	public Automovil getAutomovil(String marca, String nombre) {
 		for(Automovil automovil:listaAutomoviles) {
-			if(automovil.getNombre().equals("cadena")) {
-				encontrados.add(automovil);
+			if(automovil.getMarca().equalsIgnoreCase(marca) && automovil.getNombre().equalsIgnoreCase(nombre)) {
+				return automovil;
 			}
 		}
-		return encontrados;
+		
+		return null;
+	}
+
+	public List<Automovil> filtrarVehiculoPorTipo(String tipo) {
+		List<Automovil> filtrados = new ArrayList<>();
+		
+		for(Automovil automovil:listaAutomoviles) {
+			if(automovil.getTipo().equalsIgnoreCase(tipo)) {
+				filtrados.add(automovil);
+			}
+		}
+		
+		return filtrados;
 	}
 	
+    public List<Automovil> ordenarPorTipo() {
+    	List<Automovil> automovilesOrdenados = new ArrayList<>(listaAutomoviles);
+   
+        Collections.sort(listaAutomoviles, new Comparator<Automovil>() {
+            @Override
+            public int compare(Automovil auto1, Automovil auto2) {
+                return auto1.getTipo().compareTo(auto2.getTipo());
+            }
+        });
+         
+        return automovilesOrdenados;
+    }
+
+    public List<Automovil> ordenarPorNombre() {
+    	List<Automovil> automovilesOrdenados = new ArrayList<>(listaAutomoviles);
+        Collections.sort(automovilesOrdenados, new Comparator<Automovil>() {
+            @Override
+            public int compare(Automovil auto1, Automovil auto2) {
+                return auto1.getNombre().compareTo(auto2.getNombre());
+            }
+        });
+        
+        return automovilesOrdenados;
+    }
+
+    public List<Automovil> ordenarPorMarca() {
+    	List<Automovil> automovilesOrdenados = new ArrayList<>(listaAutomoviles);
+        Collections.sort(automovilesOrdenados, new Comparator<Automovil>() {
+            @Override
+            public int compare(Automovil auto1, Automovil auto2) {
+                return auto1.getMarca().compareTo(auto2.getMarca());
+            }
+        });
+        
+        return automovilesOrdenados;
+    }
+    
 }
